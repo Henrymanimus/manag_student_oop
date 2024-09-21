@@ -11,16 +11,31 @@ using namespace std;
 // Create student class
 class Student
 {
+private:
+    int age;
+
 public:
     int id;
     string name;
     vector<float> scoreList;
 
-    Student(int id, string name, vector<float> scoreList)
+    Student(int id, string name, int age, vector<float> scoreList)
     {
         this->id = id;
         this->name = name;
+        this->age = age;
         this->scoreList = scoreList;
+    }
+
+    int getAge()
+    {
+        return age;
+    }
+
+    string getAgeStudentByString()
+    {
+        int firstAgeSelect = age / 10;
+        return to_string(firstAgeSelect) + "X";
     }
 };
 /*------------------------------MANAGE STUDENT-------------------------------*/
@@ -31,9 +46,15 @@ class classRoom
 private:
     int classID;
     string className;
+    vector<int> studentIDs;
 
 public:
-    classRoom(int id, string name) : classID(id), className(name) {}
+    classRoom(int id, string name, vector<int> studentIDs)
+    {
+        this->classID = id;
+        this->className = name;
+        this->studentIDs = studentIDs;
+    }
 
     int getClassID() const
     {
@@ -54,6 +75,16 @@ public:
     {
         className = name;
     }
+
+    void addStudent(int studentID)
+    {
+        studentIDs.push_back(studentID);
+    }
+
+    const vector<int> &getStudentIDs()
+    {
+        return studentIDs;
+    }
 };
 
 // All fuctuon in the school
@@ -73,11 +104,15 @@ public:
     void addStudent()
     {
         string name;
+        int age;
         vector<float> scores(3);
 
         cout << "Enter student name: ";
         cin.ignore();
         getline(cin, name);
+
+        cout << "Enter student age: ";
+        cin >> age;
         // enter point
         cout << "Enter Math score: ";
         cin >> scores[0];
@@ -89,14 +124,14 @@ public:
         if (studentList.empty())
         {
             int firstID = 0;
-            studentList.push_back(new Student(firstID, name, scores));
+            studentList.push_back(new Student(firstID, name, age, scores));
         }
         else
         {
             Student *lastStudent = studentList.back();
             int lastStudentID = lastStudent->id;
             int newID = lastStudentID + 1;
-            studentList.push_back(new Student(newID, name, scores));
+            studentList.push_back(new Student(newID, name, age, scores));
         }
 
         cout << "input successfully" << endl;
@@ -115,6 +150,7 @@ public:
         {
             cout << "ID: " << studentList[i]->id << ", ";
             cout << "student name: " << studentList[i]->name << ", ";
+            cout << "student age: " << studentList[i]->getAgeStudentByString() << ", ";
             cout << "Math: " << studentList[i]->scoreList[0] << ", ";
             cout << "Literature: " << studentList[i]->scoreList[1] << ", ";
             cout << "English: " << studentList[i]->scoreList[2] << endl;
@@ -220,17 +256,56 @@ public:
     {
         string className;
         int newID = classList.empty() ? 0 : classList.back()->getClassID() + 1;
+        vector<int> studentIDs;
 
         cout << "Enter class name: ";
         cin.ignore();
         getline(cin, className);
 
-        classList.push_back(new classRoom(newID, className));
+        classRoom *newClass = new classRoom(newID, className, studentIDs);
+        classList.push_back(newClass);
+
+        // Gán học sinh vào lớp
+        // Gán học sinh vào lớp
+        while (true)
+        {
+            int studentID;
+            cout << "Enter student ID to assign to this class (or type 'done' to finish): ";
+            string input;
+            cin >> input;
+
+            if (input == "done")
+            {
+                break;
+            }
+
+            // Kiểm tra nếu đầu vào là số nguyên
+            bool validInput = false;
+            for (Student *student : studentList)
+            {
+                // Chuyển đổi đầu vào thành số
+                studentID = stoi(input);
+                if (student->id == studentID)
+                {
+                    newClass->addStudent(studentID);
+                    cout << "Student with ID " << studentID << " has been assigned to class " << className << endl;
+                    validInput = true;
+                    break;
+                }
+            }
+
+            if (!validInput)
+            {
+                cout << "Student with ID " << studentID << " not found.\n";
+            }
+        }
+
         cout << "Class added successfully." << endl;
     }
 
     // Show class
-    void showClass()
+    void
+    showClass()
     {
         if (classList.empty())
         {
@@ -241,6 +316,20 @@ public:
         {
             cout << "Class ID: " << classList[i]->getClassID() << ", ";
             cout << "Class Name: " << classList[i]->getClassName() << endl;
+            
+            const vector<int>& studentIDs = classList[i]->getStudentIDs();
+            if (!studentIDs.empty()) {
+                cout << "Students in this class: " << endl;
+                for (int id : studentIDs) {
+                    for (Student* student : studentList) {
+                        if (student->id == id) {
+                            cout << "ID: " << student->id << ", Name: " << student->name << ", Age: " << student->getAgeStudentByString() << endl;
+                        }
+                    }
+                }
+            } else {
+                cout << "No students in this class." << endl;
+            }
         }
     }
 };
